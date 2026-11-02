@@ -1,0 +1,125 @@
+
+> build-graph
+> tsx --env-file=.env src/cli/build-graph.ts
+
+  extracted 20/1827
+  extracted 40/1827
+  extracted 60/1827
+  extracted 80/1827
+  extracted 100/1827
+  extracted 120/1827
+  extracted 140/1827
+  extracted 160/1827
+  extracted 180/1827
+  extracted 200/1827
+  extracted 220/1827
+  extracted 240/1827
+  extracted 260/1827
+  extracted 280/1827
+  extracted 300/1827
+  extracted 320/1827
+  extracted 340/1827
+  extracted 360/1827
+  extracted 380/1827
+  extracted 400/1827
+  extracted 420/1827
+  extracted 440/1827
+  extracted 460/1827
+  extracted 480/1827
+  extracted 500/1827
+  extracted 520/1827
+  extracted 540/1827
+  extracted 560/1827
+  extracted 580/1827
+  extracted 600/1827
+  extracted 620/1827
+  extracted 640/1827
+  extracted 660/1827
+  extracted 680/1827
+  extracted 700/1827
+  extracted 720/1827
+  extracted 740/1827
+  extracted 760/1827
+  extracted 780/1827
+  extracted 800/1827
+  extracted 820/1827
+  extracted 840/1827
+  extracted 860/1827
+  extracted 880/1827
+  extracted 900/1827
+  extracted 920/1827
+  extracted 940/1827
+  extracted 960/1827
+  extracted 980/1827
+  extracted 1000/1827
+  extracted 1020/1827
+  extracted 1040/1827
+  extracted 1060/1827
+  extracted 1080/1827
+  extracted 1100/1827
+  extracted 1120/1827
+  extracted 1140/1827
+  extracted 1160/1827
+  extracted 1180/1827
+  extracted 1200/1827
+  extracted 1220/1827
+  extracted 1240/1827
+  extracted 1260/1827
+  extracted 1280/1827
+  extracted 1300/1827
+  extracted 1320/1827
+  extracted 1340/1827
+  extracted 1360/1827
+  extracted 1380/1827
+  extracted 1400/1827
+  extracted 1420/1827
+  extracted 1440/1827
+  extracted 1460/1827
+  extracted 1480/1827
+  extracted 1500/1827
+  extracted 1520/1827
+  extracted 1540/1827
+  extracted 1560/1827
+  extracted 1580/1827
+  extracted 1600/1827
+  extracted 1620/1827
+  extracted 1640/1827
+  extracted 1660/1827
+  extracted 1680/1827
+  extracted 1700/1827
+  extracted 1720/1827
+  extracted 1740/1827
+  extracted 1760/1827
+  extracted 1780/1827
+  extracted 1800/1827
+  extracted 1820/1827
+  extracted 1827/1827
+{
+ "chunks": 1827,
+ "skipped": 0,
+ "unparsed": 57,
+ "entities": 11333,
+ "relations": 14168,
+ "seconds": 860,
+ "usage": {
+  "calls": 1827,
+  "promptTokens": 450011,
+  "completionTokens": 513979
+ },
+ "promptTokensPerChunk": 246,
+ "completionTokensPerChunk": 281
+}
+
+sample relations:
+  [How I Met Your Mother] Bob Saget --portrays--> Future Ted Mosby
+  [How I Met Your Mother] Future Ted Mosby --is future self of--> Ted Mosby
+  [How I Met Your Mother] Future Ted Mosby --narrates story in--> 2030
+  [How I Met Your Mother] Future Ted Mosby --appears in--> How I Met Your Mother
+  [The Mother (How I Met Your Mother)] Tracy McConnell --is title character of--> How I Met Your Mother
+  [The Mother (How I Met Your Mother)] How I Met Your Mother --aired on--> CBS
+  [The Mother (How I Met Your Mother)] How I Met Your Mother --narrated by--> Future Ted
+  [The Mother (How I Met Your Mother)] Future Ted --voiced by--> Bob Saget
+  [The Mother (How I Met Your Mother)] How I Met Your Mother --tells story of--> Ted Mosby
+  [The Mother (How I Met Your Mother)] Ted Mosby --portrayed by--> Josh Radnor
+  [The Mother (How I Met Your Mother)] Ted Mosby --met--> Tracy McConnell
+  [The Mother (How I Met Your Mother)] Tracy McConnell --appears in--> Lucky Penny
