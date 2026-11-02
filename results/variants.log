@@ -1,0 +1,43 @@
+RUN --system graph --hops 1
+ "system": "graph",
+ "em": 0.3,
+ "f1": 0.4126320346320346,
+ "supportRecall": 0.5758333333333333,
+  "calls": 200,
+  "promptTokens": 66887,
+RUN --system graph+hybrid --hops 1
+ "system": "graph+hybrid",
+ "em": 0.36,
+ "f1": 0.4770995670995671,
+ "supportRecall": 0.6358333333333333,
+  "calls": 200,
+  "promptTokens": 82005,
+RUN --system graph --max-degree 20
+ "system": "graph",
+ "em": 0.39,
+ "f1": 0.5037142857142857,
+ "supportRecall": 0.6283333333333332,
+  "calls": 200,
+  "promptTokens": 72398,
+RUN --system graph+hybrid --max-degree 20
+ "system": "graph+hybrid",
+ "em": 0.48,
+ "f1": 0.5780793650793651,
+ "supportRecall": 0.7008333333333334,
+  "calls": 200,
+  "promptTokens": 81155,
+RUN --system hybrid --k 8
+ "system": "hybrid",
+ "em": 0.33,
+ "f1": 0.4587210012210011,
+ "supportRecall": 0.6016666666666666,
+  "calls": 100,
+  "promptTokens": 120758,
+RUN --system graph+hybrid --k 8
+ "system": "graph+hybrid",
+ "em": 0.48,
+ "f1": 0.5805856888209828,
+ "supportRecall": 0.7608333333333335,
+  "calls": 200,
+  "promptTokens": 124226,
+ALL-DONE
