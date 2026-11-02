@@ -8,7 +8,8 @@
     "ingest": "tsx --env-file=.env src/cli/ingest.ts",
     "eval": "tsx --env-file=.env src/cli/eval.ts",
     "build-graph": "tsx --env-file=.env src/cli/build-graph.ts",
-    "update-cost": "tsx --env-file=.env src/cli/update-cost.ts"
+    "update-cost": "tsx --env-file=.env src/cli/update-cost.ts",
+    "report": "tsx src/cli/report.ts"
   },
   "dependencies": {
     "postgres": "^3.4.0",

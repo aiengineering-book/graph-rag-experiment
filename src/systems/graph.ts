@@ -30,6 +30,23 @@ export async function questionEntities(llm: Llm, question: string): Promise<stri
 
 const ids = (xs: number[]) => `{${xs.join(',')}}`
 
+export type SearchOpts = { hops?: number; k?: number; seedsPerName?: number; maxPerHop?: number; maxDegree?: number }
+
+// Number of distinct neighbours per entity, used to spot hubs such as "Florida".
+const degrees = new WeakMap<Db, Map<number, number>>()
+async function degreeMap(db: Db): Promise<Map<number, number>> {
+  let m = degrees.get(db)
+  if (!m) {
+    const rows = await db.query<{ x: number; deg: string }>(
+      `SELECT x, count(DISTINCT y) AS deg FROM
+         (SELECT src AS x, dst AS y FROM relations UNION ALL SELECT dst, src FROM relations) t GROUP BY x`,
+    )
+    m = new Map(rows.map(r => [r.x, Number(r.deg)]))
+    degrees.set(db, m)
+  }
+  return m
+}
+
 // Local search: find the question's entities in the graph, walk `hops` steps along
 // relations, and rank chunks by how close their entities are to the seeds
 // (weight 1 / (1 + hops from a seed), summed over the chunk's entities).
@@ -38,9 +55,10 @@ export async function graphSearch(
   embedder: Embedder,
   llm: Llm,
   question: string,
-  opts: { hops?: number; k?: number; seedsPerName?: number; maxPerHop?: number } = {},
+  opts: SearchOpts = {},
 ): Promise<{ rows: Row[]; seeds: number }> {
-  const { hops = 2, k = 5, seedsPerName = 1, maxPerHop = 50 } = opts
+  const { hops = 2, k = 5, seedsPerName = 1, maxPerHop = 50, maxDegree } = opts
+  const degree = maxDegree === undefined ? undefined : await degreeMap(db)
   const names = await questionEntities(llm, question)
   if (names.length === 0) return { rows: [], seeds: 0 }
 
@@ -57,9 +75,13 @@ export async function graphSearch(
 
   let frontier = [...distance.keys()]
   for (let h = 1; h <= hops && frontier.length > 0; h++) {
+    // Hubs (more than maxDegree neighbours) still count through their own
+    // mentions, but the walk does not continue through them.
+    const walk = degree ? frontier.filter(n => (degree.get(n) ?? 0) <= maxDegree!) : frontier
+    if (walk.length === 0) break
     const edges = await db.query<{ src: number; dst: number }>(
       'SELECT src, dst FROM relations WHERE src = ANY($1::int[]) OR dst = ANY($1::int[])',
-      [ids(frontier)],
+      [ids(walk)],
     )
     const fresh = new Set<number>()
     for (const e of edges) for (const n of [e.src, e.dst]) if (!distance.has(n)) fresh.add(n)
@@ -82,23 +104,23 @@ export async function graphSearch(
   return { rows, seeds }
 }
 
-export function graph(db: Db, embedder: Embedder, llm: Llm, k = 5): RagSystem {
+export function graph(db: Db, embedder: Embedder, llm: Llm, k = 5, search: SearchOpts = {}): RagSystem {
   return {
     name: 'graph',
     async answer(question) {
-      const { rows } = await graphSearch(db, embedder, llm, question, { k })
+      const { rows } = await graphSearch(db, embedder, llm, question, { ...search, k })
       return { answer: await answerWith(llm, question, rows), retrieved: rows }
     },
   }
 }
 
 // Graph passages and hybrid passages merged by reciprocal rank fusion.
-export function graphHybrid(db: Db, embedder: Embedder, llm: Llm, k = 5): RagSystem {
+export function graphHybrid(db: Db, embedder: Embedder, llm: Llm, k = 5, search: SearchOpts = {}): RagSystem {
   return {
     name: 'graph+hybrid',
     async answer(question) {
       const [g, h] = await Promise.all([
-        graphSearch(db, embedder, llm, question, { k: 20 }),
+        graphSearch(db, embedder, llm, question, { ...search, k: 20 }),
         hybridSearch(db, embedder, question, 20),
       ])
       const score = new Map<number, { row: Row; s: number }>()
