@@ -8,7 +8,7 @@ A reproducible comparison of three ways to answer questions over a document coll
 
 Everything runs on Postgres and TypeScript. No graph database is needed.
 
-> Work in progress. Stage 1 (schema, embeddings, LLM client with a token budget, ingestion) is done. The three systems and the evaluation harness come next.
+> Work in progress. Done: schema, embeddings, LLM client with a token budget, ingestion, the no-retrieval and hybrid systems, and the scoring harness. Graph retrieval comes next.
 
 ## Requirements
 
@@ -29,3 +29,13 @@ npm test               # runs on PGlite, no server needed
 ## Data
 
 The multi-hop questions come from the [MuSiQue](https://github.com/StonyBrookNLP/musique) dev set (CC BY 4.0). Download it and take a fixed sample of 100 questions with the commands in `data/README.md`.
+
+## Run
+
+```bash
+npm run ingest                                     # embeds data/paragraphs.json into Postgres
+npm run eval -- --system closed-book --limit 10    # control, no retrieval
+npm run eval -- --system hybrid --limit 10         # vector + keyword search
+```
+
+Each run prints a summary and writes per-question results to `results/`. Scoring is exact match and token F1 against the answer and its aliases, plus the share of each question's supporting passages that the system retrieved.

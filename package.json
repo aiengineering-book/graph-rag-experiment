@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "test": "tsx --test test/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ingest": "tsx --env-file=.env src/cli/ingest.ts",
+    "eval": "tsx --env-file=.env src/cli/eval.ts"
   },
   "dependencies": {
     "postgres": "^3.4.0",
