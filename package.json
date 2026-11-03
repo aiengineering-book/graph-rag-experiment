@@ -9,7 +9,9 @@
     "eval": "tsx --env-file=.env src/cli/eval.ts",
     "build-graph": "tsx --env-file=.env src/cli/build-graph.ts",
     "update-cost": "tsx --env-file=.env src/cli/update-cost.ts",
-    "report": "tsx src/cli/report.ts"
+    "report": "tsx src/cli/report.ts",
+    "export-graph": "tsx --env-file=.env src/cli/export-graph.ts",
+    "import-graph": "tsx --env-file=.env src/cli/import-graph.ts"
   },
   "dependencies": {
     "postgres": "^3.4.0",

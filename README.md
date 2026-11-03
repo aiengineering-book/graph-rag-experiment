@@ -26,6 +26,19 @@ docker compose up -d
 npm test               # runs on PGlite, no server needed
 ```
 
+## Skip the graph build
+
+Building the graph costs about 964,000 LLM tokens. `graph-dump/graph.json.gz` (0.8 MB) holds the finished graph: passages, entities, mentions and relations, without embeddings. With Postgres and Ollama running:
+
+```bash
+npm run import-graph    # about 2 minutes: re-embeds the passages and entity names locally, no LLM calls
+npm run eval -- --system graph+hybrid
+```
+
+The import copies the graph exactly (same row counts). The embeddings are recomputed, and they come out slightly different each time, so a few near-tied searches can return a different top 5. On the first 30 questions, two imports gave 4 and 5 questions with a different retrieved list, and exact match differed by 2 questions from the original run (15 against 17 correct). Expect results within a few points of the tables below, not identical to them.
+
+`graph-dump/questions.json` is the 100-question sample, so the MuSiQue download is only needed to draw a different sample.
+
 ## Data
 
 The multi-hop questions come from the [MuSiQue](https://github.com/StonyBrookNLP/musique) dev set (CC BY 4.0). Download it and take a fixed sample of 100 questions with the commands in `data/README.md`.
@@ -74,3 +87,7 @@ Read these with the following in mind:
 - The hub cap of 20 neighbours was chosen after looking at failures on these same questions, so its gain is optimistic. It fixed the case it was designed for (a hub entity, "Florida", crowding out the answer). One question appears twice in the sample under different ids, so that fix counts twice.
 - Graph retrieval did not help every question. It lost where the question names no entity to start from (for example a question about the Dow Jones and unemployment).
 - The graph has no communities or community summaries, so this says nothing about global, whole-corpus questions.
+
+## Data licence
+
+The questions and passages come from MuSiQue (Trivedi et al., 2022), distributed under CC BY 4.0: <https://github.com/StonyBrookNLP/musique>. `graph-dump/` contains a 100-question sample of its dev set and the passages shipped with those questions, plus the entities and relations our extraction produced from them.
