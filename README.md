@@ -94,6 +94,15 @@ Variations (each uses the same graph, no rebuild):
 | hybrid, 8 passages | 33% | 60% | +5 vs hybrid [-1, 12] | 120,758 |
 | graph + hybrid, 8 passages | 48% | 76% | +15 vs hybrid, 8 passages [7, 23] | 124,226 |
 
+Stronger keyword search (BM25, as in the book's Chapter 11, instead of Postgres `ts_rank`; `--keyword bm25`):
+
+| run | exact match | evidence retrieved | EM vs hybrid with BM25 (paired) | prompt tokens |
+|---|---|---|---|---|
+| hybrid, BM25 | 27% [19, 36] | 59% | baseline | 69,378 |
+| graph + hybrid, BM25 | 38% [29, 48] | 68% | +11 pts [3, 20], 16 vs 5 | 69,625 |
+
+BM25 raised the baseline's evidence retrieval from 51% to 59% but not its answers (27% against 28%, no difference worth reporting). The graph's advantage stayed: +11 points over the stronger baseline, against +14 over the `ts_rank` one, with an interval that still excludes zero. There is still no reranker.
+
 Costs:
 
 - Building the graph once: 1,827 LLM calls, about 964,000 tokens (450,000 prompt, 514,000 completion), about 14 minutes at concurrency 4. 57 passages (3%) returned JSON that did not parse and have no graph entries.

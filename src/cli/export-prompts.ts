@@ -10,7 +10,7 @@ import { graph, graphHybrid, questionEntities } from '../systems/graph.js'
 import { hybrid } from '../systems/hybrid.js'
 import type { RagSystem } from '../systems/types.js'
 
-// Usage: npm run export-prompts -- [--system hybrid] [--limit 100] [--k 5] [--hops 2] [--max-degree 20]
+// Usage: npm run export-prompts -- [--system hybrid] [--limit 100] [--k 5] [--hops 2] [--max-degree 20] [--keyword bm25]
 // Writes prompts/<system>.jsonl. Retrieval needs Postgres and Ollama; no answering model is called.
 // The graph systems need the entities named in each question, which are cached in
 // graph-dump/question-entities.json so that exporting needs no LLM once the cache exists.
@@ -20,8 +20,9 @@ const arg = (name: string) => {
 }
 const num = (name: string) => (arg(name) === undefined ? undefined : Number(arg(name)))
 const k = num('k') ?? 5
+const keyword = arg('keyword') === 'bm25' ? 'bm25' : 'tsrank'
 const search = { hops: num('hops'), maxDegree: num('max-degree') }
-const tag = [num('hops') !== undefined && `hops${num('hops')}`, num('max-degree') !== undefined && `deg${num('max-degree')}`, k !== 5 && `k${k}`]
+const tag = [num('hops') !== undefined && `hops${num('hops')}`, num('max-degree') !== undefined && `deg${num('max-degree')}`, k !== 5 && `k${k}`, keyword === 'bm25' && 'bm25']
   .filter(Boolean).join('-')
 const questions = (JSON.parse(readFileSync('data/questions.json', 'utf8')) as Question[]).slice(0, num('limit') ?? Infinity)
 
@@ -34,9 +35,9 @@ const db = openPostgres(config.databaseUrl)
 const embedder = ollamaEmbedder()
 const systems: Record<string, () => RagSystem> = {
   'closed-book': () => closedBook(llm),
-  hybrid: () => hybrid(db, embedder, llm, k),
+  hybrid: () => hybrid(db, embedder, llm, k, keyword),
   graph: () => graph(db, embedder, llm, k, search, entitiesFor),
-  'graph+hybrid': () => graphHybrid(db, embedder, llm, k, search, entitiesFor),
+  'graph+hybrid': () => graphHybrid(db, embedder, llm, k, search, entitiesFor, keyword),
 }
 const which = arg('system') ? [arg('system')!] : Object.keys(systems)
 mkdirSync('prompts', { recursive: true })

@@ -3,7 +3,7 @@ import type { Db } from '../db.js'
 import { toVector } from '../db.js'
 import type { Embedder } from '../embed.js'
 import type { Llm } from '../llm.js'
-import { hybridSearch } from './hybrid.js'
+import { hybridSearch, type Keyword } from './hybrid.js'
 import type { RagSystem } from './types.js'
 
 const QUESTION_ENTITIES_SYSTEM =
@@ -122,11 +122,11 @@ export function graph(db: Db, embedder: Embedder, llm: Llm, k = 5, search: Searc
 }
 
 // Graph passages and hybrid passages merged by reciprocal rank fusion.
-export function graphHybrid(db: Db, embedder: Embedder, llm: Llm, k = 5, search: SearchOpts = {}, entitiesFor?: EntitiesFor): RagSystem {
+export function graphHybrid(db: Db, embedder: Embedder, llm: Llm, k = 5, search: SearchOpts = {}, entitiesFor?: EntitiesFor, keyword: Keyword = 'tsrank'): RagSystem {
   const retrieve = async (question: string) => {
       const [g, h] = await Promise.all([
         graphSearch(db, embedder, llm, question, { ...search, k: 20 }, entitiesFor),
-        hybridSearch(db, embedder, question, 20),
+        hybridSearch(db, embedder, question, 20, 20, keyword),
       ])
       const score = new Map<number, { row: Row; s: number }>()
       for (const list of [g.rows, h]) {
