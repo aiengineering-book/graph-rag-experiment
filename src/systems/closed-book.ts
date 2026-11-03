@@ -6,6 +6,7 @@ import type { RagSystem } from './types.js'
 export function closedBook(llm: Llm): RagSystem {
   return {
     name: 'closed-book',
+    retrieve: async () => [],
     async answer(question) {
       return { answer: await answerWith(llm, question, []), retrieved: [] }
     },

@@ -46,6 +46,7 @@ export async function hybridSearch(
 export function hybrid(db: Db, embedder: Embedder, llm: Llm, k = 5): RagSystem {
   return {
     name: 'hybrid',
+    retrieve: question => hybridSearch(db, embedder, question, k),
     async answer(question) {
       const retrieved = await hybridSearch(db, embedder, question, k)
       return { answer: await answerWith(llm, question, retrieved), retrieved }

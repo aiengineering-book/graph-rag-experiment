@@ -39,6 +39,25 @@ The import copies the graph exactly (same row counts). The embeddings are recomp
 
 `graph-dump/questions.json` is the 100-question sample, so the MuSiQue download is only needed to draw a different sample.
 
+## Try another model, or run the prompts anywhere
+
+`prompts/*.jsonl` holds the exact messages each system sends to the answering model: one line per question, with the retrieved passages already in the prompt. Retrieval is finished, so answering needs no database, no Ollama and no graph. Use the files with any model:
+
+```bash
+# any OpenAI-compatible API: set LLM_BASE_URL, LLM_API_KEY, LLM_MODEL in .env
+npm run run-prompts -- prompts/graph-hybrid.jsonl --out answers/graph-hybrid.jsonl
+npm run score-answers -- prompts/graph-hybrid.jsonl answers/graph-hybrid.jsonl --out results/mine-graph-hybrid-100.json
+npm run report -- results/mine-hybrid-100.json results/mine-graph-hybrid-100.json
+```
+
+Or answer the prompts yourself in a different way (a batch API, another SDK, a script) and write `{"id": "...", "answer": "..."}` lines for `score-answers`. Pasting prompts into a chat window is possible but not comparable: chat products add their own system prompt, memory and sometimes search.
+
+Regenerate the prompts with `npm run export-prompts` (needs Postgres and Ollama; the entities named in each question are cached in `graph-dump/question-entities.json`, so it makes no LLM calls once the cache exists). Variants take the same flags as `eval`: `--k`, `--hops`, `--max-degree`.
+
+Only DeepSeek was tested. The client sends DeepSeek's `thinking` switch only when `LLM_BASE_URL` contains "deepseek", and `LLM_MAX_TOKENS_PARAM=max_completion_tokens` renames the token limit for models that need it. Other providers may need further changes.
+
+On the first 20 questions, answering the exported graph + hybrid prompts through `run-prompts` and scoring them gave the same exact match, F1 and evidence recall as the original run (0.65, 0.77, 0.87).
+
 ## Data
 
 The multi-hop questions come from the [MuSiQue](https://github.com/StonyBrookNLP/musique) dev set (CC BY 4.0). Download it and take a fixed sample of 100 questions with the commands in `data/README.md`.

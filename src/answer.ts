@@ -1,4 +1,4 @@
-import type { Llm } from './llm.js'
+import type { Llm, Message } from './llm.js'
 
 export type Passage = { title: string; body: string }
 
@@ -8,15 +8,16 @@ const SYSTEM =
 
 // Every system answers through this one function, so differences in the
 // results come from what each system retrieves and not from the prompt.
-export async function answerWith(llm: Llm, question: string, passages: Passage[]): Promise<string> {
+export function buildMessages(question: string, passages: Passage[]): Message[] {
   const context = passages.map((p, i) => `[${i + 1}] ${p.title}\n${p.body}`).join('\n\n')
   const user = passages.length ? `Passages:\n${context}\n\nQuestion: ${question}` : `Question: ${question}`
-  const text = await llm.chat(
-    [
-      { role: 'system', content: passages.length ? `${SYSTEM} Use the passages.` : SYSTEM },
-      { role: 'user', content: user },
-    ],
-    { maxTokens: 64 },
-  )
+  return [
+    { role: 'system', content: passages.length ? `${SYSTEM} Use the passages.` : SYSTEM },
+    { role: 'user', content: user },
+  ]
+}
+
+export async function answerWith(llm: Llm, question: string, passages: Passage[]): Promise<string> {
+  const text = await llm.chat(buildMessages(question, passages), { maxTokens: 64 })
   return text.trim()
 }

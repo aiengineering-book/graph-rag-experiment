@@ -11,7 +11,10 @@
     "update-cost": "tsx --env-file=.env src/cli/update-cost.ts",
     "report": "tsx src/cli/report.ts",
     "export-graph": "tsx --env-file=.env src/cli/export-graph.ts",
-    "import-graph": "tsx --env-file=.env src/cli/import-graph.ts"
+    "import-graph": "tsx --env-file=.env src/cli/import-graph.ts",
+    "export-prompts": "tsx --env-file=.env src/cli/export-prompts.ts",
+    "run-prompts": "tsx --env-file=.env src/cli/run-prompts.ts",
+    "score-answers": "tsx src/cli/score-answers.ts"
   },
   "dependencies": {
     "postgres": "^3.4.0",

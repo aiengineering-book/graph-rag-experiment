@@ -4,3 +4,4 @@ node_modules
 .venv
 data/*
 !data/README.md
+answers/

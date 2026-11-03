@@ -28,8 +28,9 @@ export function createLlm(budget = config.tokenBudget): Llm {
           model: config.llmModel,
           messages,
           temperature: 0,
-          max_tokens: opts.maxTokens ?? 1024,
-          thinking: { type: 'disabled' },
+          [process.env.LLM_MAX_TOKENS_PARAM ?? 'max_tokens']: opts.maxTokens ?? 1024,
+          // DeepSeek-specific switch; other providers may reject unknown fields.
+          ...(config.llmBaseUrl.includes('deepseek') ? { thinking: { type: 'disabled' } } : {}),
           ...(opts.json ? { response_format: { type: 'json_object' } } : {}),
         }),
       })

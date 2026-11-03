@@ -12,6 +12,10 @@ const QUESTION_ENTITIES_SYSTEM =
 
 type Row = Passage & { id: number }
 
+// Supplies the entities named in a question. The default asks the LLM; a cache
+// of earlier answers lets retrieval run with no LLM call at all.
+export type EntitiesFor = (question: string) => Promise<string[]>
+
 export async function questionEntities(llm: Llm, question: string): Promise<string[]> {
   const text = await llm.chat(
     [
@@ -56,10 +60,11 @@ export async function graphSearch(
   llm: Llm,
   question: string,
   opts: SearchOpts = {},
+  entitiesFor: EntitiesFor = q => questionEntities(llm, q),
 ): Promise<{ rows: Row[]; seeds: number }> {
   const { hops = 2, k = 5, seedsPerName = 1, maxPerHop = 50, maxDegree } = opts
   const degree = maxDegree === undefined ? undefined : await degreeMap(db)
-  const names = await questionEntities(llm, question)
+  const names = await entitiesFor(question)
   if (names.length === 0) return { rows: [], seeds: 0 }
 
   const distance = new Map<number, number>()
@@ -104,23 +109,23 @@ export async function graphSearch(
   return { rows, seeds }
 }
 
-export function graph(db: Db, embedder: Embedder, llm: Llm, k = 5, search: SearchOpts = {}): RagSystem {
+export function graph(db: Db, embedder: Embedder, llm: Llm, k = 5, search: SearchOpts = {}, entitiesFor?: EntitiesFor): RagSystem {
+  const retrieve = async (question: string) => (await graphSearch(db, embedder, llm, question, { ...search, k }, entitiesFor)).rows
   return {
     name: 'graph',
+    retrieve,
     async answer(question) {
-      const { rows } = await graphSearch(db, embedder, llm, question, { ...search, k })
+      const rows = await retrieve(question)
       return { answer: await answerWith(llm, question, rows), retrieved: rows }
     },
   }
 }
 
 // Graph passages and hybrid passages merged by reciprocal rank fusion.
-export function graphHybrid(db: Db, embedder: Embedder, llm: Llm, k = 5, search: SearchOpts = {}): RagSystem {
-  return {
-    name: 'graph+hybrid',
-    async answer(question) {
+export function graphHybrid(db: Db, embedder: Embedder, llm: Llm, k = 5, search: SearchOpts = {}, entitiesFor?: EntitiesFor): RagSystem {
+  const retrieve = async (question: string) => {
       const [g, h] = await Promise.all([
-        graphSearch(db, embedder, llm, question, { ...search, k: 20 }),
+        graphSearch(db, embedder, llm, question, { ...search, k: 20 }, entitiesFor),
         hybridSearch(db, embedder, question, 20),
       ])
       const score = new Map<number, { row: Row; s: number }>()
@@ -131,7 +136,13 @@ export function graphHybrid(db: Db, embedder: Embedder, llm: Llm, k = 5, search:
           score.set(row.id, e)
         })
       }
-      const rows = [...score.values()].sort((a, b) => b.s - a.s).slice(0, k).map(e => e.row)
+      return [...score.values()].sort((a, b) => b.s - a.s).slice(0, k).map(e => e.row)
+  }
+  return {
+    name: 'graph+hybrid',
+    retrieve,
+    async answer(question) {
+      const rows = await retrieve(question)
       return { answer: await answerWith(llm, question, rows), retrieved: rows }
     },
   }
